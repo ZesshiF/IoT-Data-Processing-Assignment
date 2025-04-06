@@ -3,12 +3,15 @@ from datetime import datetime
 from typing import Optional
 
 class SensorDataCreate(BaseModel):
-    temperature: float
-    humidity: float
-    air_quality: float
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    air_quality: Optional[float] = None
 
-class SensorDataResponse(SensorDataCreate):
+class SensorDataResponse(BaseModel):
     id: int
+    temperature: Optional[float]
+    humidity: Optional[float]
+    air_quality: Optional[float]
     timestamp: datetime
     is_anomaly: bool
     is_cleaned: bool

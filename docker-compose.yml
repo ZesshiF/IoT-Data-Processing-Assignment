@@ -1,16 +1,17 @@
-version: "3.8"
+version: '3.8'
 
 services:
   db:
     image: postgres:13-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres       
+      POSTGRES_PASSWORD: postgres   
       POSTGRES_DB: iot_data
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./data:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -22,12 +23,16 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/iot_data
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/iot_data" 
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ./backend:/app
+    command: >
+      sh -c "sleep 5 && 
+      python -c 'from app.database import engine, Base; Base.metadata.create_all(bind=engine)' &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
   frontend:
     build: ./frontend
@@ -35,10 +40,11 @@ services:
       - "5173:5173"
     environment:
       VITE_API_URL: http://localhost:8000
-    volumes:
-      - ./frontend:/app
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
   postgres-data:

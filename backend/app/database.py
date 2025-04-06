@@ -2,11 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# PostgreSQL connection URL format: postgresql://username:password@host:port/database
-POSTGRESQL_DATABASE_URL = "postgresql://postgres:password@db:5432/iot_data"
+POSTGRES_USER = "postgres"
+POSTGRES_PASSWORD = "postgres"
+POSTGRES_DB = "iot_data"
+POSTGRES_HOST = "db"  # 
+
+DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:5432/{POSTGRES_DB}"
 
 engine = create_engine(
-    POSTGRESQL_DATABASE_URL,
+    DATABASE_URL,
     pool_size=20,
     max_overflow=10,
     pool_pre_ping=True,
@@ -15,3 +19,10 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
