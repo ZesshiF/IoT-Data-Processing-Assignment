@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from .database import engine, Base
 from .routers import sensor
+from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +37,14 @@ async def startup_event():
     await connect_to_db()
 
 app.include_router(sensor.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For development only! Tighten this for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
